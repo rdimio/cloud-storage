@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="center" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ClientController">
+    <MenuBar>
+        <Menu text="File">
+            <MenuItem text="Exit" />
+        </Menu>
+        <Menu text="Connection settings">
+            <MenuItem text="Edit" />
+        </Menu>
+    </MenuBar>
+    <HBox VBox.vgrow="ALWAYS">
+        <fx:include fx:id="clientPanel" source="client_panel.fxml" HBox.hgrow="ALWAYS" />
+        <fx:include fx:id="serverPanel" source="server_panel.fxml" HBox.hgrow="ALWAYS" />
+    </HBox>
+</VBox>

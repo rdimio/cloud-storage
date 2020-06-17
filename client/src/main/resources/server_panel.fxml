@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="center" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ClientController">
+    <HBox>
+        <ComboBox fx:id="disksBox" />
+        <TextField fx:id="pathField" editable="false" HBox.hgrow="ALWAYS"/>
+        <Button text="up" />
+    </HBox>
+    <TableView fx:id="filesTable" VBox.vgrow="ALWAYS"/>
+    <HBox>
+        <Button maxWidth="Infinity" text="download" HBox.hgrow="ALWAYS" />
+        <Button maxWidth="Infinity" text="delete" HBox.hgrow="ALWAYS" />
+    </HBox>
+</VBox>
