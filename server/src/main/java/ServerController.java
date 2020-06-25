@@ -27,7 +27,6 @@ public class ServerController {
         if(isAlive) {
             server.stop();
             executor.shutdownNow();
-            executor = Executors.newSingleThreadExecutor();
             isAlive = false;
         } else throw new RuntimeException("server is stopped");
     }
