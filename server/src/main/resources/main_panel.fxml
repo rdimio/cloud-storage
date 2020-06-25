@@ -4,6 +4,6 @@
 <?import javafx.scene.layout.*?>
 
 <HBox alignment="center" spacing="30.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ServerController">
-    <Button prefHeight="80.0" prefWidth="150.0" text="Start" />
-    <Button prefHeight="80.0" prefWidth="150.0" text="Stop" />
+    <Button prefHeight="80.0" prefWidth="150.0" text="Start" onAction="#serverStart"/>
+    <Button prefHeight="80.0" prefWidth="150.0" text="Stop" onAction="#serverStop"/>
 </HBox>

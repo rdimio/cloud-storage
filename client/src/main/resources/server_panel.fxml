@@ -4,15 +4,20 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox alignment="center" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ClientController">
+<VBox alignment="center" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="FilesController">
     <HBox>
         <ComboBox fx:id="disksBox" />
         <TextField fx:id="pathField" editable="false" HBox.hgrow="ALWAYS"/>
         <Button text="up" />
     </HBox>
     <TableView fx:id="filesTable" VBox.vgrow="ALWAYS"/>
+
+    <properties>
+        <ctrl><fx:reference source="controller"/></ctrl>
+    </properties>
+
     <HBox>
-        <Button maxWidth="Infinity" text="download" HBox.hgrow="ALWAYS" />
-        <Button maxWidth="Infinity" text="delete" HBox.hgrow="ALWAYS" />
+        <Button maxWidth="Infinity" focusTraversable="false" text="download" HBox.hgrow="ALWAYS" onAction="#downloadBtnAction"/>
+        <Button maxWidth="Infinity" focusTraversable="false" text="delete" HBox.hgrow="ALWAYS" onAction="#deleteBtnAction"/>
     </HBox>
 </VBox>
