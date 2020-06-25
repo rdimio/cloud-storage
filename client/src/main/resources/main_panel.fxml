@@ -7,10 +7,10 @@
 <VBox alignment="center" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ClientController">
     <MenuBar>
         <Menu text="File">
-            <MenuItem text="Exit" />
+            <MenuItem text="Exit" onAction="#btnExitAction"/>
         </Menu>
         <Menu text="Connection settings">
-            <MenuItem text="Edit" />
+            <MenuItem text="Edit" onAction="#conSettings"/>
         </Menu>
     </MenuBar>
     <HBox VBox.vgrow="ALWAYS">
