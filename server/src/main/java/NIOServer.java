@@ -1,10 +1,9 @@
-import java.io.IOException;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 public class NIOServer implements Runnable {
@@ -40,6 +39,9 @@ public class NIOServer implements Runnable {
                     }
                     if (key.isReadable()) {
                         handleRead(key);
+                    }
+                    if(key.isWritable()) {
+                        handleWrite(key);
                     }
                 }
             }
@@ -80,14 +82,31 @@ public class NIOServer implements Runnable {
         }
     }
 
+    private void handleWrite(SelectionKey key) throws IOException {
+        SocketChannel sc = (SocketChannel) key.channel();
+        System.out.println("open file");
+        Path path = Paths.get("C:\\Users\\Vadim\\Documents\\CloudStorage\\server\\data\\1.txt");
+        FileChannel fileChannel = FileChannel.open(path);
+        System.out.println("start sending");
+        while(fileChannel.read(buffer) > 0) {
+            buffer.flip();
+            sc.write(buffer);
+            buffer.clear();
+        }
+        fileChannel.close();
+        sc.close();
+        System.out.println("file is sent");
+    }
+
     private void handleAccess(SelectionKey key) throws IOException {
         SocketChannel channel = ((ServerSocketChannel) key.channel()).accept();
         clientCount++;
         String userName = "user#" + clientCount;
         channel.configureBlocking(false);
-        channel.register(selector, SelectionKey.OP_READ, userName);
-        channel.write(ByteBuffer.wrap(("Hello " + userName + "!").getBytes()));
+//        channel.register(selector, SelectionKey.OP_READ, userName);
+//        channel.write(ByteBuffer.wrap(("Hello " + userName + "!").getBytes()));
         System.out.println("Client " + userName + " connected from ip: " + channel.getLocalAddress());
+        channel.register(selector, SelectionKey.OP_WRITE, userName);
     }
 
     public void stop() {

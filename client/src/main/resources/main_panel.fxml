@@ -10,11 +10,12 @@
             <MenuItem text="Exit" onAction="#btnExitAction"/>
         </Menu>
         <Menu text="Connection settings">
-            <MenuItem text="Edit" onAction="#conSettings"/>
+            <MenuItem text="Edit"/>
         </Menu>
     </MenuBar>
     <HBox VBox.vgrow="ALWAYS">
         <fx:include fx:id="clientPanel" source="client_panel.fxml" HBox.hgrow="ALWAYS" />
         <fx:include fx:id="serverPanel" source="server_panel.fxml" HBox.hgrow="ALWAYS" />
     </HBox>
+    <Button maxWidth="Infinity" focusTraversable="false" text="connect" HBox.hgrow="ALWAYS"  onAction="#conClient"/>
 </VBox>

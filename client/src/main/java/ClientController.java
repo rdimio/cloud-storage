@@ -3,6 +3,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
 
+import java.io.IOException;
+import java.util.concurrent.Executors;
+
 
 public class ClientController {
     @FXML
@@ -12,7 +15,8 @@ public class ClientController {
         Platform.exit();
     }
 
-    public void conSettings(ActionEvent actionEvent) {
 
+    public void conClient(ActionEvent actionEvent) throws IOException {
+        Executors.newSingleThreadExecutor().execute(new NIOClient());
     }
 }
