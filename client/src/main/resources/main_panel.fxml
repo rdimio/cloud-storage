@@ -17,4 +17,8 @@
         <fx:include fx:id="clientPanel" source="client_panel.fxml" HBox.hgrow="ALWAYS" />
         <fx:include fx:id="serverPanel" source="server_panel.fxml" HBox.hgrow="ALWAYS" />
     </HBox>
+    <HBox VBox.vgrow="ALWAYS">
+        <Button maxWidth="Infinity" focusTraversable="false" text="connect" HBox.hgrow="ALWAYS" onAction="#connect"/>
+        <Button maxWidth="Infinity" focusTraversable="false" text="disconnect" HBox.hgrow="ALWAYS" onAction="#disconnect"/>
+    </HBox>
 </VBox>

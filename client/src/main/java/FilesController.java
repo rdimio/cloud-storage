@@ -127,13 +127,4 @@ public class FilesController implements Initializable {
         return pathField.getText();
     }
 
-
-    public void downloadBtnAction(ActionEvent actionEvent) {
-    }
-
-    public void deleteBtnAction(ActionEvent actionEvent) {
-    }
-
-    public void sendToCloudBtnAction(ActionEvent actionEvent) {
-    }
 }
