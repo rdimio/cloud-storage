@@ -5,31 +5,32 @@ import io.netty.util.ReferenceCountUtil;
 import javafx.event.ActionEvent;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.stream.Collectors;
 
 public class ServerController extends ChannelInboundHandlerAdapter {
 
     private NettyServer server;
-    private boolean isAlive;
+    static ConcurrentLinkedDeque<ChannelHandlerContext> clients = new ConcurrentLinkedDeque<>();
+    static int cnt = 0;
+    private String userName;
 
 
     public ServerController() {
-        server = new NettyServer(8090);
+        server = new NettyServer();
     }
 
-    public void serverStart(ActionEvent actionEvent) {
-        if(!isAlive) {
-            new Thread(server).start();
-            isAlive = true;
-        } else throw new RuntimeException("server is already started");
+    public void serverStart() {
+        new Thread(server).start();
     }
 
-    public void serverStop(ActionEvent actionEvent) throws IOException {
-        if(isAlive) {
-            server.disconnect();
-            isAlive = false;
-        } else throw new RuntimeException("server is stopped");
+    public void serverStop() {
+        server.disconnect();
     }
 
     @Override
@@ -53,9 +54,22 @@ public class ServerController extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) {
+    public void channelActive(ChannelHandlerContext ctx) throws IOException {
         System.out.println("Client connected!");
-//        Path path = Paths.get("C:\\Users\\Vadim\\Documents\\CloudStorage\\resources\\1.txt");
+        clients.add(ctx);
+        cnt++;
+        userName = "user#" + cnt;
+        Path path = Paths.get("./server/src/main/resources/data");
+        List<FileMessage> fl = Files.list(path).map(FileMessage::new).collect(Collectors.toList());
+        ctx.writeAndFlush(fl);
+
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        System.out.println("Client disconnected!");
+        clients.remove(ctx);
+        cnt--;
     }
 
 }

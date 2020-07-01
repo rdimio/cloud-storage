@@ -1,12 +1,13 @@
 import com.sun.prism.shader.AlphaOne_Color_AlphaTest_Loader;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-public class FileInfo {
+public class FileMessage implements Serializable {
 
     public enum FileType {
         FILE("F"), DIRECTORY("D");
@@ -58,7 +59,7 @@ public class FileInfo {
     private long size;
     private LocalDateTime lastModified;
 
-    public FileInfo(Path path) {
+    public FileMessage(Path path) {
         try {
             this.size = Files.size(path);
             this.filename = path.getFileName().toString();

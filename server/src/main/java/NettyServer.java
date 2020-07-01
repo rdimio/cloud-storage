@@ -3,16 +3,15 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 
 public class NettyServer extends Thread{
 
-    private int port;
+    private static final int PORT = 8190;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
-
-    public NettyServer(int port) {
-        this.port = port;
-    }
 
     @Override
     public void run() {
@@ -25,19 +24,22 @@ public class NettyServer extends Thread{
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new ServerController());
+                            ch.pipeline().addLast(new ObjectEncoder(),
+                                    new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                                    new ServerController());
                         }
                     });
-            ChannelFuture f = b.bind(port).sync();
+            ChannelFuture f = b.bind(PORT).sync();
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } finally {
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
         }
     }
 
     public void disconnect(){
-        bossGroup.shutdownGracefully();
-        workerGroup.shutdownGracefully();
         interrupt();
     }
 }
