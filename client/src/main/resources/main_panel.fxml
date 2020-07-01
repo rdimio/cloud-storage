@@ -9,15 +9,37 @@
         <Menu text="File">
             <MenuItem text="Exit" onAction="#btnExitAction"/>
         </Menu>
-        <Menu text="Connection settings">
-            <MenuItem text="Edit" onAction="#conSettings"/>
-        </Menu>
     </MenuBar>
-    <HBox VBox.vgrow="ALWAYS">
-        <fx:include fx:id="clientPanel" source="client_panel.fxml" HBox.hgrow="ALWAYS" />
-        <fx:include fx:id="serverPanel" source="server_panel.fxml" HBox.hgrow="ALWAYS" />
+
+    <HBox>
+        <VBox>
+            <HBox>
+                <TextField fx:id="clientPathField" editable="false" HBox.hgrow="ALWAYS"/>
+                <Button text="up" onAction="#clientBtnPathUpAction"/>
+            </HBox>
+            <TableView fx:id="clientFilesTable" HBox.Hgrow="ALWAYS" VBox.vgrow="ALWAYS"/>
+            <HBox>
+                <Button maxWidth="Infinity" focusTraversable="false" text="send to cloud" HBox.hgrow="ALWAYS" onAction="#sendToCloudBtnAction"/>
+                <Button maxWidth="Infinity" focusTraversable="false" text="delete from client" HBox.hgrow="ALWAYS" onAction="#deleteFromClientBtnAction"/>
+            </HBox>
+        </VBox>
+        <VBox>
+            <TableView fx:id="serverFilesTable" HBox.Hgrow="ALWAYS" VBox.vgrow="ALWAYS"/>
+            <HBox>
+                <Button maxWidth="Infinity" focusTraversable="false" text="download" HBox.hgrow="ALWAYS" onAction="#downloadBtnAction"/>
+                <Button maxWidth="Infinity" focusTraversable="false" text="delete from cloud" HBox.hgrow="ALWAYS" onAction="#deleteFromCloudBtnAction"/>
+            </HBox>
+        </VBox>
     </HBox>
-    <HBox VBox.vgrow="ALWAYS">
+
+    <HBox spacing="10">
+        <padding>
+            <Insets top="10" bottom="10" left="10" right="10"/>
+        </padding>
+        <TextField text="login" fx:id="login"/>
+        <PasswordField text="password" fx:id="password"/>
+        <TextField text="localhost" fx:id="ipAddress"/>
+        <TextField text="8190" fx:id="port"/>
         <Button maxWidth="Infinity" focusTraversable="false" text="connect" HBox.hgrow="ALWAYS" onAction="#connect"/>
         <Button maxWidth="Infinity" focusTraversable="false" text="disconnect" HBox.hgrow="ALWAYS" onAction="#disconnect"/>
     </HBox>
