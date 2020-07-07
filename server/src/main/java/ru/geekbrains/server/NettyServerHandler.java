@@ -1,20 +1,20 @@
+package ru.geekbrains.server;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
-import javafx.event.ActionEvent;
+import ru.geekbrains.common.FileMessage;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
 
-public class ServerController extends ChannelInboundHandlerAdapter {
+public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     private NettyServer server;
     static ConcurrentLinkedDeque<ChannelHandlerContext> clients = new ConcurrentLinkedDeque<>();
@@ -22,7 +22,7 @@ public class ServerController extends ChannelInboundHandlerAdapter {
     private String userName;
 
 
-    public ServerController() {
+    public NettyServerHandler() {
         server = new NettyServer();
     }
 
@@ -61,8 +61,7 @@ public class ServerController extends ChannelInboundHandlerAdapter {
         cnt++;
         userName = "user#" + cnt;
         Path path = Paths.get("./server/src/main/resources/data");
-//        List<FileMessage> fl = Files.list(path).map(FileMessage::new).collect(Collectors.toList());
-        File[] fl = path.toFile().listFiles();
+        List<FileMessage> fl = Files.list(path).map(FileMessage::new).collect(Collectors.toList());
         ctx.writeAndFlush(fl);
 
     }

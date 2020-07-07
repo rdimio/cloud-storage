@@ -1,7 +1,8 @@
+package ru.geekbrains.client;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -36,7 +37,7 @@ public class NettyClient extends Thread {
                             channel = socketChannel;
                             socketChannel.pipeline().addLast(new ObjectEncoder(),
                                     new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                    new ClientController());
+                                    new NettyClientHandler(port, host));
                         }
                     });
 
@@ -49,8 +50,8 @@ public class NettyClient extends Thread {
         }
     }
     public void disconnect() {
-        workerGroup.shutdownGracefully();
         channel.close();
+        workerGroup.shutdownGracefully();
         interrupt();
     }
 }

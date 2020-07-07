@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox alignment="center" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ClientController">
+<VBox alignment="center" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.client.ClientController">
     <MenuBar>
         <Menu text="File">
             <MenuItem text="Exit" onAction="#btnExitAction"/>
@@ -36,11 +36,10 @@
         <padding>
             <Insets top="10" bottom="10" left="10" right="10"/>
         </padding>
-        <TextField text="login" fx:id="login"/>
-        <PasswordField text="password" fx:id="password"/>
         <TextField text="localhost" fx:id="ipAddress"/>
         <TextField text="8190" fx:id="port"/>
         <Button maxWidth="Infinity" focusTraversable="false" text="connect" HBox.hgrow="ALWAYS" onAction="#connect"/>
         <Button maxWidth="Infinity" focusTraversable="false" text="disconnect" HBox.hgrow="ALWAYS" onAction="#disconnect"/>
+        <Button maxWidth="Infinity" focusTraversable="false" text="showServerFiles" HBox.hgrow="ALWAYS" onAction="#updateTable"/>
     </HBox>
 </VBox>

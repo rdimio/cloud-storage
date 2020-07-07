@@ -1,4 +1,4 @@
-import com.sun.prism.shader.AlphaOne_Color_AlphaTest_Loader;
+package ru.geekbrains.common;
 
 import java.io.IOException;
 import java.io.Serializable;

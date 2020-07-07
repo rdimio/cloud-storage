@@ -1,3 +1,5 @@
+package ru.geekbrains.server;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -26,7 +28,7 @@ public class NettyServer extends Thread{
                         public void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().addLast(new ObjectEncoder(),
                                     new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                    new ServerController());
+                                    new NettyServerHandler());
                         }
                     });
             ChannelFuture f = b.bind(PORT).sync();

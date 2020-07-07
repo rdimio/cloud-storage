@@ -1,16 +1,15 @@
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+package ru.geekbrains.client;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
+import ru.geekbrains.common.FileMessage;
+import ru.geekbrains.server.NettyServerHandler;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -22,7 +21,7 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 
-public class ClientController extends ChannelInboundHandlerAdapter implements Initializable{
+public class ClientController implements Initializable{
 
     @FXML
     TextField login;
@@ -47,32 +46,16 @@ public class ClientController extends ChannelInboundHandlerAdapter implements In
 
     private NettyClient nettyClient;
     private boolean isAlive;
-    private ServerController serverController;
+    private NettyServerHandler nettyServerHandler;
+    private NettyClientHandler nettyClientHandler;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         getContent(clientFilesTable, clientPathField);
         getContent(serverFilesTable, null);
         updateList(clientFilesTable, Paths.get("./client/src/main/resources/data"),clientPathField);
-        serverController = new ServerController();
-    }
-
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-//        List<FileMessage> fl = (List<FileMessage>) msg;
-
-            File[] fl = (File[]) msg;
-        System.out.println(fl);
-/*        serverFilesTable.getItems().clear();
-        serverFilesTable.setItems(fl);
-        serverFilesTable.sort();
-        getContent(serverFilesTable, null);*/
-        ctx.close();
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
-        ctx.close();
+        nettyServerHandler = new NettyServerHandler();
+        nettyClientHandler = new NettyClientHandler(Integer.parseInt(port.getText()), ipAddress.getText());
     }
 
     public void btnExitAction(ActionEvent actionEvent) {
@@ -81,21 +64,28 @@ public class ClientController extends ChannelInboundHandlerAdapter implements In
 
     public void connect(ActionEvent actionEvent) {
         if(!isAlive) {
-            serverController.serverStart();
-            nettyClient = new NettyClient( Integer.parseInt(port.getText()), ipAddress.getText());
-            new Thread(nettyClient).start();
+            nettyServerHandler.serverStart();
+            nettyClientHandler.connectServer();
             isAlive = true;
-        } else throw new RuntimeException("client is already started");
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "client is already connected", ButtonType.OK);
+            alert.showAndWait();
+        }
     }
 
 
     public void disconnect(ActionEvent actionEvent) {
         if(isAlive) {
-            nettyClient.disconnect();
             isAlive = false;
-            serverController.serverStop();
+            nettyClientHandler.disconnectServer();
+            nettyServerHandler.serverStop();
+            serverFilesTable.getItems().clear();
             System.out.println("Client disconnected!");
-        } else throw new RuntimeException("client is disconnected");
+        } else  {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "client is already disconnected", ButtonType.OK);
+            alert.showAndWait();
+        }
+
     }
 
     public void getContent(TableView<FileMessage> filesTable, TextField pathField) {
@@ -181,5 +171,12 @@ public class ClientController extends ChannelInboundHandlerAdapter implements In
     }
 
     public void deleteFromCloudBtnAction(ActionEvent actionEvent) {
+    }
+
+    public void updateTable(ActionEvent actionEvent) {
+        List<FileMessage> fl = nettyClientHandler.getFl();
+        serverFilesTable.getItems().clear();
+        serverFilesTable.getItems().addAll(fl);
+        serverFilesTable.sort();
     }
 }
