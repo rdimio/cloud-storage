@@ -4,5 +4,6 @@ public enum State {
     WAIT,
     DOWNLOAD_FILE,
     SEND_FILE,
-    DELETE_FILE
+    DELETE_FILE,
+    GET_LIST
 }

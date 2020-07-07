@@ -139,6 +139,17 @@ public class ClientController implements Initializable{
         }
     }
 
+    public String getSelectedFilename(TableView<FileMessage> filesTable) {
+        if (!filesTable.isFocused()) {
+            return null;
+        }
+        return filesTable.getSelectionModel().getSelectedItem().getFilename();
+    }
+
+    public String getCurrentPath(TextField pathField) {
+        return pathField.getText();
+    }
+
     public void clientBtnPathUpAction(ActionEvent actionEvent) {
         btnPathUpAction(clientPathField, clientFilesTable);
     }
@@ -150,8 +161,10 @@ public class ClientController implements Initializable{
     public void sendToCloudBtnAction(ActionEvent actionEvent) {
     }
 
-    public void deleteFromClientBtnAction(ActionEvent actionEvent) {
-
+    public void deleteFromClientBtnAction(ActionEvent actionEvent) throws IOException {
+        Path path = Paths.get(getCurrentPath(clientPathField), getSelectedFilename(clientFilesTable));
+        Files.delete(path);
+        updateList(clientFilesTable, path.getParent(), clientPathField);
     }
 
     public void downloadBtnAction(ActionEvent actionEvent) {
