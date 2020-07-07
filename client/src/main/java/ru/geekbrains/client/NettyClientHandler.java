@@ -2,19 +2,16 @@ package ru.geekbrains.client;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import ru.geekbrains.common.FileMessage;
+import ru.geekbrains.common.FileList;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class NettyClientHandler extends ChannelInboundHandlerAdapter {
 
     private NettyClient nettyClient;
-    private static List<FileMessage> fl;
+    private static FileList fl;
 
     public NettyClientHandler(int port, String host) {
        nettyClient = new NettyClient(port, host);
-       fl = new ArrayList<>();
     }
 
     public void connectServer() {
@@ -27,9 +24,10 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        fl = (List<FileMessage>) msg;
-        System.out.println(fl);
-        setFl(fl);
+        if(msg instanceof FileList) {
+            fl = (FileList) msg;
+            System.out.println(fl);
+        }
         ctx.close();
     }
 
@@ -39,11 +37,8 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-    public List<FileMessage> getFl() {
+    public FileList getFl() {
         return fl;
     }
 
-    public void setFl(List<FileMessage> fl) {
-        this.fl = fl;
-    }
 }

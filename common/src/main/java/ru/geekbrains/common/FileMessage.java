@@ -25,33 +25,14 @@ public class FileMessage implements Serializable {
     public String getFilename() {
         return filename;
     }
-
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
-
     public FileType getType() {
         return type;
     }
-
-    public void setType(FileType type) {
-        this.type = type;
-    }
-
     public long getSize() {
         return size;
     }
-
-    public void setSize(long size) {
-        this.size = size;
-    }
-
     public LocalDateTime getLastModified() {
         return lastModified;
-    }
-
-    public void setLastModified(LocalDateTime lastModified) {
-        this.lastModified = lastModified;
     }
 
     private String filename;

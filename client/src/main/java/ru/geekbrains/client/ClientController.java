@@ -8,7 +8,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import ru.geekbrains.common.FileMessage;
-import ru.geekbrains.server.NettyServerHandler;
 
 import java.io.IOException;
 import java.net.URL;
@@ -24,37 +23,22 @@ import java.util.stream.Collectors;
 public class ClientController implements Initializable{
 
     @FXML
-    TextField login;
+    TextField ipAddress, port;
 
     @FXML
-    PasswordField password;
+    TableView<FileMessage> clientFilesTable, serverFilesTable;
 
     @FXML
-    TextField ipAddress;
+    TextField clientPathField, serverPathField;
 
-    @FXML
-    TextField port;
-
-    @FXML
-    TableView<FileMessage> clientFilesTable;
-
-    @FXML
-    TableView<FileMessage> serverFilesTable;
-
-    @FXML
-    TextField clientPathField;
-
-    private NettyClient nettyClient;
     private boolean isAlive;
-    private NettyServerHandler nettyServerHandler;
     private NettyClientHandler nettyClientHandler;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         getContent(clientFilesTable, clientPathField);
-        getContent(serverFilesTable, null);
+        getContent(serverFilesTable, serverPathField);
         updateList(clientFilesTable, Paths.get("./client/src/main/resources/data"),clientPathField);
-        nettyServerHandler = new NettyServerHandler();
         nettyClientHandler = new NettyClientHandler(Integer.parseInt(port.getText()), ipAddress.getText());
     }
 
@@ -64,7 +48,6 @@ public class ClientController implements Initializable{
 
     public void connect(ActionEvent actionEvent) {
         if(!isAlive) {
-            nettyServerHandler.serverStart();
             nettyClientHandler.connectServer();
             isAlive = true;
         } else {
@@ -78,7 +61,6 @@ public class ClientController implements Initializable{
         if(isAlive) {
             isAlive = false;
             nettyClientHandler.disconnectServer();
-            nettyServerHandler.serverStop();
             serverFilesTable.getItems().clear();
             System.out.println("Client disconnected!");
         } else  {
@@ -150,21 +132,26 @@ public class ClientController implements Initializable{
         }
     }
 
-    public void btnPathUpAction(TextField pathField) {
+    public void btnPathUpAction(TextField pathField, TableView<FileMessage> filesTable) {
         Path upperPath = Paths.get(pathField.getText()).getParent();
         if (upperPath != null) {
-            updateList(clientFilesTable,upperPath,pathField);
+            updateList(filesTable,upperPath,pathField);
         }
     }
 
     public void clientBtnPathUpAction(ActionEvent actionEvent) {
-        btnPathUpAction(clientPathField);
+        btnPathUpAction(clientPathField, clientFilesTable);
+    }
+
+    public void serverBtnPathUpAction(ActionEvent actionEvent) {
+        btnPathUpAction(serverPathField, serverFilesTable);
     }
 
     public void sendToCloudBtnAction(ActionEvent actionEvent) {
     }
 
     public void deleteFromClientBtnAction(ActionEvent actionEvent) {
+
     }
 
     public void downloadBtnAction(ActionEvent actionEvent) {
@@ -174,9 +161,13 @@ public class ClientController implements Initializable{
     }
 
     public void updateTable(ActionEvent actionEvent) {
-        List<FileMessage> fl = nettyClientHandler.getFl();
+        List<FileMessage> fl = nettyClientHandler.getFl().getList();
+        String url = nettyClientHandler.getFl().getUrl();
+        serverPathField.setText(url);
         serverFilesTable.getItems().clear();
         serverFilesTable.getItems().addAll(fl);
         serverFilesTable.sort();
     }
+
+
 }

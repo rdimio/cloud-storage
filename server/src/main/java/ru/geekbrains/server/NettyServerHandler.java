@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
+import ru.geekbrains.common.FileList;
 import ru.geekbrains.common.FileMessage;
 
 import java.io.IOException;
@@ -20,7 +21,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     static ConcurrentLinkedDeque<ChannelHandlerContext> clients = new ConcurrentLinkedDeque<>();
     static int cnt = 0;
     private String userName;
-
+    private static final String STORAGE = "./server/src/main/resources/data";
 
     public NettyServerHandler() {
         server = new NettyServer();
@@ -60,9 +61,10 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         clients.add(ctx);
         cnt++;
         userName = "user#" + cnt;
-        Path path = Paths.get("./server/src/main/resources/data");
+        Path path = Paths.get(STORAGE);
         List<FileMessage> fl = Files.list(path).map(FileMessage::new).collect(Collectors.toList());
-        ctx.writeAndFlush(fl);
+        FileList list = new FileList(fl, STORAGE);
+        ctx.writeAndFlush(list);
 
     }
 

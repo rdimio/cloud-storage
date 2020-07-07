@@ -24,6 +24,10 @@
             </HBox>
         </VBox>
         <VBox>
+            <HBox>
+                <TextField fx:id="serverPathField" editable="false" HBox.hgrow="ALWAYS"/>
+                <Button text="up" onAction="#serverBtnPathUpAction"/>
+            </HBox>
             <TableView fx:id="serverFilesTable" HBox.Hgrow="ALWAYS" VBox.vgrow="ALWAYS"/>
             <HBox>
                 <Button maxWidth="Infinity" focusTraversable="false" text="download" HBox.hgrow="ALWAYS" onAction="#downloadBtnAction"/>
