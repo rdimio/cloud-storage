@@ -7,7 +7,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import ru.geekbrains.common.FileList;
 import ru.geekbrains.common.FileMessage;
+import ru.geekbrains.common.State;
 
 import java.io.IOException;
 import java.net.URL;
@@ -31,18 +33,21 @@ public class ClientController implements Initializable{
     @FXML
     TextField clientPathField, serverPathField;
 
-    private boolean isAlive;
     private NettyClientHandler nettyClientHandler;
+    private static final String url = "./client/src/main/resources/data";
+    private boolean requestSend;
+    private boolean isAlive;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         getContent(clientFilesTable, clientPathField);
         getContent(serverFilesTable, serverPathField);
-        updateList(clientFilesTable, Paths.get("./client/src/main/resources/data"),clientPathField);
+        updateList(clientFilesTable, Paths.get(url),clientPathField);
         nettyClientHandler = new NettyClientHandler(Integer.parseInt(port.getText()), ipAddress.getText());
     }
 
     public void btnExitAction(ActionEvent actionEvent) {
+        nettyClientHandler.disconnectServer();
         Platform.exit();
     }
 
@@ -158,29 +163,46 @@ public class ClientController implements Initializable{
         btnPathUpAction(serverPathField, serverFilesTable);
     }
 
-    public void sendToCloudBtnAction(ActionEvent actionEvent) {
+    public void sendToCloudBtnAction(ActionEvent actionEvent) throws IOException {
+        Path path = Paths.get(getCurrentPath(clientPathField), getSelectedFilename(clientFilesTable));
+        nettyClientHandler.setCurrentState(State.SEND_FILE);
+        nettyClientHandler.sendToCloud(path);
+        requestSend = false;
     }
 
     public void deleteFromClientBtnAction(ActionEvent actionEvent) throws IOException {
         Path path = Paths.get(getCurrentPath(clientPathField), getSelectedFilename(clientFilesTable));
         Files.delete(path);
         updateList(clientFilesTable, path.getParent(), clientPathField);
+        requestSend = false;
     }
 
     public void downloadBtnAction(ActionEvent actionEvent) {
+        String fn = serverFilesTable.getSelectionModel().getSelectedItem().getFilename();
+        nettyClientHandler.setCurrentState(State.DOWNLOAD_FILE);
+        nettyClientHandler.setUrl(fn);
+        nettyClientHandler.downloadFile(fn);
+        requestSend = false;
     }
 
     public void deleteFromCloudBtnAction(ActionEvent actionEvent) {
+        String fn = serverFilesTable.getSelectionModel().getSelectedItem().getFilename();
+        nettyClientHandler.setCurrentState(State.DELETE_FILE);
+        nettyClientHandler.deleteFromCloud(fn);
+        requestSend = false;
     }
 
-    public void updateTable(ActionEvent actionEvent) {
-        List<FileMessage> fl = nettyClientHandler.getFl().getList();
-        String url = nettyClientHandler.getFl().getUrl();
-        serverPathField.setText(url);
-        serverFilesTable.getItems().clear();
-        serverFilesTable.getItems().addAll(fl);
-        serverFilesTable.sort();
+    public void updateServerTable(ActionEvent actionEvent) {
+        if (!requestSend) {
+            nettyClientHandler.setCurrentState(State.GET_LIST);
+            nettyClientHandler.getFileList();
+            requestSend = true;
+        }
+        FileList fl = NettyClientHandler.getList();
+        if(NettyClientHandler.isListRefreshed()) {
+            updateList(serverFilesTable, Paths.get(fl.getUrl()), serverPathField);
+            updateList(clientFilesTable, Paths.get(url), clientPathField);
+        }
     }
-
 
 }

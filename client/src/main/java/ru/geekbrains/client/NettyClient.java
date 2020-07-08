@@ -7,9 +7,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
+
+import java.net.InetSocketAddress;
 
 public class NettyClient extends Thread {
 
@@ -23,35 +22,42 @@ public class NettyClient extends Thread {
         this.host = host;
     }
 
-    @Override
-    public void run() {
-        workerGroup = new NioEventLoopGroup();
-
-        try {
-            Bootstrap b = new Bootstrap();
-            b.group(workerGroup)
-                    .channel(NioSocketChannel.class)
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            channel = socketChannel;
-                            socketChannel.pipeline().addLast(new ObjectEncoder(),
-                                    new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                    new NettyClientHandler(port, host));
-                        }
-                    });
-
-            // Start the client.
-            ChannelFuture f = b.connect(host, port).sync();
-            // Wait until the connection is closed.
-            f.channel().closeFuture().sync();
-        }  catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public SocketChannel getChannel() {
+        return channel;
     }
+
+    public void connect() {
+        Thread t = new Thread(() -> {
+            EventLoopGroup workerGroup = new NioEventLoopGroup();
+            try {
+                Bootstrap b = new Bootstrap();
+                b.group(workerGroup)
+                        .channel(NioSocketChannel.class)
+                        .remoteAddress(new InetSocketAddress(host,port))
+                        .handler(new ChannelInitializer<SocketChannel>() {
+
+                            @Override
+                            protected void initChannel(SocketChannel socketChannel) throws Exception {
+                                socketChannel.pipeline().addLast(new NettyClientHandler(port, host));
+                                channel = socketChannel;
+                            }
+
+                        });
+                ChannelFuture future = b.connect().sync();
+
+                future.channel().closeFuture().sync();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                workerGroup.shutdownGracefully();
+            }
+        });
+
+        t.setDaemon(true);
+        t.start();
+    }
+
     public void disconnect() {
         channel.close();
-        workerGroup.shutdownGracefully();
-        interrupt();
     }
 }

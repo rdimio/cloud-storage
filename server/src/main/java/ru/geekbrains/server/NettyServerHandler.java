@@ -3,24 +3,17 @@ package ru.geekbrains.server;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.util.ReferenceCountUtil;
-import ru.geekbrains.common.FileList;
-import ru.geekbrains.common.FileMessage;
+import ru.geekbrains.common.CommandType;
+import ru.geekbrains.common.FileController;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.stream.Collectors;
 
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     private NettyServer server;
     static ConcurrentLinkedDeque<ChannelHandlerContext> clients = new ConcurrentLinkedDeque<>();
-    static int cnt = 0;
-    private String userName;
     private static final String STORAGE = "./server/src/main/resources/data";
 
     public NettyServerHandler() {
@@ -36,17 +29,33 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        ByteBuf in = (ByteBuf) msg;
-        try {
-            while (in.isReadable()) {
-                System.out.print((char) in.readByte());
-                System.out.flush();
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws IOException {
+        if (msg == null) return;
+        ByteBuf buf = ((ByteBuf) msg);
+        while (buf.readableBytes() > 0) {
+            byte read = buf.readByte();
+            if(read == CommandType.SEND_FILE.getCode()) {
+                FileController.receiveFile(buf, STORAGE);
             }
-        } finally {
-            ReferenceCountUtil.release(msg);
+            if(read == CommandType.RECEIVE_FILE.getCode()) {
+                Path path = FileController.getFileByFileName(buf, STORAGE);
+                FileController.sendFile(path, ctx.channel());
+            }
+            if(read == CommandType.SEND_FILE_LIST.getCode()) {
+                FileController.sendFilesList(ctx.channel(), STORAGE);
+                System.out.println("List send");
+            }
+            if(read == CommandType.DELETE.getCode()) {
+                FileController.deleteFromStorage(buf, STORAGE);
+            }
         }
+        buf.release();
+        ctx.close();
+    }
 
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+        System.out.println("client connected");
     }
 
     @Override
@@ -56,22 +65,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws IOException {
-        System.out.println("Client connected!");
-        clients.add(ctx);
-        cnt++;
-        userName = "user#" + cnt;
-        Path path = Paths.get(STORAGE);
-        List<FileMessage> fl = Files.list(path).map(FileMessage::new).collect(Collectors.toList());
-        FileList list = new FileList(fl, STORAGE);
-        ctx.writeAndFlush(list);
-
-    }
-
-    @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        clients.remove(ctx);
-        cnt--;
+        System.out.println("Client disconnected");
     }
-
 }

@@ -1,13 +1,14 @@
 package ru.geekbrains.common;
 
 import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.List;
 
 public class FileList implements Serializable {
 
     private List<FileMessage> list;
     private String url;
+
+    public FileList() { }
 
     public FileList(List<FileMessage> list, String url) {
         this.list = list;

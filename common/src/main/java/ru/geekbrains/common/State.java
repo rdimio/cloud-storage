@@ -5,5 +5,6 @@ public enum State {
     DOWNLOAD_FILE,
     SEND_FILE,
     DELETE_FILE,
-    GET_LIST
+    GET_LIST,
+    TAKE_LIST
 }

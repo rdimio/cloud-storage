@@ -5,9 +5,6 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
 
 public class NettyServer extends Thread{
 
@@ -26,21 +23,21 @@ public class NettyServer extends Thread{
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new ObjectEncoder(),
-                                    new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                    new NettyServerHandler());
+                            ch.pipeline().addLast(new NettyServerHandler());
                         }
                     });
             ChannelFuture f = b.bind(PORT).sync();
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } finally {
+            workerGroup.shutdownGracefully();
+            bossGroup.shutdownGracefully();
         }
+
     }
 
     public void disconnect(){
-        bossGroup.shutdownGracefully();
-        workerGroup.shutdownGracefully();
         interrupt();
     }
 }

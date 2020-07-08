@@ -44,6 +44,6 @@
         <TextField text="8190" fx:id="port"/>
         <Button maxWidth="Infinity" focusTraversable="false" text="connect" HBox.hgrow="ALWAYS" onAction="#connect"/>
         <Button maxWidth="Infinity" focusTraversable="false" text="disconnect" HBox.hgrow="ALWAYS" onAction="#disconnect"/>
-        <Button maxWidth="Infinity" focusTraversable="false" text="showServerFiles" HBox.hgrow="ALWAYS" onAction="#updateTable"/>
+        <Button maxWidth="Infinity" focusTraversable="false" text="updateServerTable" HBox.hgrow="ALWAYS" onAction="#updateServerTable"/>
     </HBox>
 </VBox>
