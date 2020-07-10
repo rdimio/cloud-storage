@@ -94,7 +94,7 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     public void downloadFile(String fileName){
-        FileController.sendDelete(nettyClient.getChannel(), fileName);
+        FileController.downloadFile(nettyClient.getChannel(), fileName);
     }
 
     public void deleteFromCloud(String fileName){

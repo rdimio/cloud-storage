@@ -17,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -52,13 +51,13 @@ public class ClientController implements Initializable{
     }
 
     public void connect(ActionEvent actionEvent) {
-        if(!isAlive) {
+//        if (!isAlive) {
             nettyClientHandler.connectServer();
-            isAlive = true;
+/*            isAlive = true;
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR, "client is already connected", ButtonType.OK);
             alert.showAndWait();
-        }
+        }*/
     }
 
 
@@ -165,6 +164,7 @@ public class ClientController implements Initializable{
     public void sendToCloudBtnAction(ActionEvent actionEvent) throws IOException {
         Path path = Paths.get(getCurrentPath(clientPathField), getSelectedFilename(clientFilesTable));
         nettyClientHandler.setCurrentState(State.SEND_FILE);
+        nettyClientHandler.connectServer();
         nettyClientHandler.sendToCloud(path);
         requestSend = false;
     }

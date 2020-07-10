@@ -10,38 +10,43 @@ import org.apache.log4j.Logger;
 public class NettyServer extends Thread{
 
     private static final int PORT = 8190;
-    private EventLoopGroup bossGroup;
-    private EventLoopGroup workerGroup;
     private static final Logger log = Logger.getLogger(NettyServer.class);
+    EventLoopGroup bossGroup = new NioEventLoopGroup();
+    EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     @Override
     public void run() {
-        bossGroup = new NioEventLoopGroup(1);
-        workerGroup = new NioEventLoopGroup();
-        ServerBootstrap b = new ServerBootstrap();
+
         try {
+            ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                    .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().addLast(new NettyServerHandler());
                         }
-                    });
+                    })
+                    .childOption(ChannelOption.SO_KEEPALIVE, true);
             log.info("Starting server");
-            ChannelFuture f = b.bind(PORT).sync();
+            ChannelFuture f = null;
+            try {
+                f = b.bind(PORT).sync();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            workerGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
-            log.info("Shutdown server");
         }
 
     }
 
     public void disconnect(){
-        interrupt();
+        workerGroup.shutdownGracefully();
+        bossGroup.shutdownGracefully();
+        log.info("Shutdown server");
+//        interrupt();
     }
 }

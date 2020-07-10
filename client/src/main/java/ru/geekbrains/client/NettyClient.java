@@ -31,6 +31,7 @@ public class NettyClient extends Thread {
 
     public void connect() {
         Thread t = new Thread(() -> {
+
             try {
                 Bootstrap b = new Bootstrap();
                 b.group(workerGroup)
@@ -52,8 +53,6 @@ public class NettyClient extends Thread {
             } catch (Exception e) {
                 log.error(e.getStackTrace());
                 e.printStackTrace();
-            } finally {
-
             }
         });
 
@@ -63,7 +62,7 @@ public class NettyClient extends Thread {
 
     public void disconnect() {
         workerGroup.shutdownGracefully();
+//        channel.close();
         log.info("Shutdown client");
-        channel.close();
     }
 }

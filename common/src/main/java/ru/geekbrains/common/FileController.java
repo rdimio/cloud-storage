@@ -3,6 +3,7 @@ package ru.geekbrains.common;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
+import io.netty.channel.socket.SocketChannel;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -232,5 +233,8 @@ public class FileController {
             e.printStackTrace();
         }
         return files;
+    }
+
+    public synchronized static void downloadFile(SocketChannel channel, String fileName) {
     }
 }
