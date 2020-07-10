@@ -47,6 +47,6 @@ public class NettyServer extends Thread{
         workerGroup.shutdownGracefully();
         bossGroup.shutdownGracefully();
         log.info("Shutdown server");
-//        interrupt();
+        interrupt();
     }
 }

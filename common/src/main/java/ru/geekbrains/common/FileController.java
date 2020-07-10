@@ -236,5 +236,22 @@ public class FileController {
     }
 
     public synchronized static void downloadFile(SocketChannel channel, String fileName) {
+        ByteBuf buf = null;
+
+        log.info("Sending download command for " + fileName);
+        buf = ByteBufAllocator.DEFAULT.directBuffer(1);
+        buf.writeByte(CommandType.RECEIVE_FILE.getCode());
+        channel.writeAndFlush(buf);
+
+        log.info("Sending file name length to download");
+        buf = ByteBufAllocator.DEFAULT.directBuffer(4);
+        buf.writeInt(fileName.length());
+        channel.writeAndFlush(buf);
+
+        log.info("Sending filename to download...");
+        byte[] filenameBytes = fileName.getBytes(StandardCharsets.UTF_8);
+        buf = ByteBufAllocator.DEFAULT.directBuffer(filenameBytes.length);
+        buf.writeBytes(filenameBytes);
+        channel.writeAndFlush(buf);
     }
 }

@@ -35,7 +35,7 @@ public class ClientController implements Initializable{
     private NettyClientHandler nettyClientHandler;
     private static final String url = "./client/src/main/resources/data";
     private boolean requestSend;
-    private boolean isAlive;
+//    private boolean isAlive;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -62,14 +62,14 @@ public class ClientController implements Initializable{
 
 
     public void disconnect(ActionEvent actionEvent) {
-        if(isAlive) {
-            isAlive = false;
+/*        if(isAlive) {
+            isAlive = false;*/
             nettyClientHandler.disconnectServer();
             serverFilesTable.getItems().clear();
-        } else  {
+/*        } else  {
             Alert alert = new Alert(Alert.AlertType.ERROR, "client is already disconnected", ButtonType.OK);
             alert.showAndWait();
-        }
+        }*/
 
     }
 
@@ -197,10 +197,12 @@ public class ClientController implements Initializable{
             nettyClientHandler.getFileList();
             requestSend = true;
         }
+
         FileList fl = NettyClientHandler.getList();
         if(NettyClientHandler.isListRefreshed()) {
             updateList(serverFilesTable, Paths.get(fl.getUrl()), serverPathField);
             updateList(clientFilesTable, Paths.get(url), clientPathField);
+            requestSend = false;
         }
     }
 

@@ -62,7 +62,7 @@ public class NettyClient extends Thread {
 
     public void disconnect() {
         workerGroup.shutdownGracefully();
-//        channel.close();
+        channel.close();
         log.info("Shutdown client");
     }
 }
