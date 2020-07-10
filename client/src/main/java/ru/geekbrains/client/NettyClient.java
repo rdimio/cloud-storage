@@ -7,6 +7,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.apache.log4j.Logger;
+import ru.geekbrains.server.NettyServer;
 
 import java.net.InetSocketAddress;
 
@@ -14,8 +16,9 @@ public class NettyClient extends Thread {
 
     private final int port;
     private final String host;
-    private EventLoopGroup workerGroup;
     private SocketChannel channel;
+    private static final Logger log = Logger.getLogger(NettyServer.class);
+    EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     public NettyClient(int port, String host) {
         this.port = port;
@@ -28,7 +31,6 @@ public class NettyClient extends Thread {
 
     public void connect() {
         Thread t = new Thread(() -> {
-            EventLoopGroup workerGroup = new NioEventLoopGroup();
             try {
                 Bootstrap b = new Bootstrap();
                 b.group(workerGroup)
@@ -43,13 +45,15 @@ public class NettyClient extends Thread {
                             }
 
                         });
+                log.info("Client started");
                 ChannelFuture future = b.connect().sync();
 
                 future.channel().closeFuture().sync();
             } catch (Exception e) {
+                log.error(e.getStackTrace());
                 e.printStackTrace();
             } finally {
-                workerGroup.shutdownGracefully();
+
             }
         });
 
@@ -58,6 +62,8 @@ public class NettyClient extends Thread {
     }
 
     public void disconnect() {
+        workerGroup.shutdownGracefully();
+        log.info("Shutdown client");
         channel.close();
     }
 }

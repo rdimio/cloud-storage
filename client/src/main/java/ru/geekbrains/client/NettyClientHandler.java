@@ -3,7 +3,9 @@ package ru.geekbrains.client;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.apache.log4j.Logger;
 import ru.geekbrains.common.*;
+import ru.geekbrains.server.NettyServerHandler;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -14,7 +16,8 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
     private static FileList list;
     private static State currentState = State.WAIT;
     private static String url;
-    private static boolean listRefreshed ;
+    private static boolean listRefreshed;
+    private static final Logger log = Logger.getLogger(NettyClientHandler.class);
 
     public NettyClientHandler(int port, String host) {
        nettyClient = new NettyClient(port, host);
@@ -42,7 +45,7 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
                 list = FileController.receiveFileList(buf, accum);
                 if(list != null) {
                     listRefreshed = true;
-                    System.out.println("list is received");
+                    log.info("files list is received");
                 }
             }
         }

@@ -67,7 +67,6 @@ public class ClientController implements Initializable{
             isAlive = false;
             nettyClientHandler.disconnectServer();
             serverFilesTable.getItems().clear();
-            System.out.println("Client disconnected!");
         } else  {
             Alert alert = new Alert(Alert.AlertType.ERROR, "client is already disconnected", ButtonType.OK);
             alert.showAndWait();

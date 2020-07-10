@@ -22,7 +22,6 @@ public class ServerController implements Initializable {
         if(!isAlive) {
             nettyServerHandler.serverStart();
             isAlive = true;
-            System.out.println("server started");
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR, "server is already started", ButtonType.OK);
             alert.showAndWait();
@@ -33,7 +32,6 @@ public class ServerController implements Initializable {
         if(isAlive) {
             isAlive = false;
             nettyServerHandler.serverStop();
-            System.out.println("server stopped");
         } else  {
             Alert alert = new Alert(Alert.AlertType.ERROR, "server is already stopped", ButtonType.OK);
             alert.showAndWait();

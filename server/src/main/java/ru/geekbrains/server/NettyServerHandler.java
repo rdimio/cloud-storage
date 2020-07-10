@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import ru.geekbrains.common.CommandType;
 import ru.geekbrains.common.FileController;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -15,6 +16,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     private NettyServer server;
     static ConcurrentLinkedDeque<ChannelHandlerContext> clients = new ConcurrentLinkedDeque<>();
     private static final String STORAGE = "./server/src/main/resources/data";
+    private static final Logger log = Logger.getLogger(NettyServerHandler.class);
 
     public NettyServerHandler() {
         server = new NettyServer();
@@ -43,7 +45,6 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             }
             if(read == CommandType.SEND_FILE_LIST.getCode()) {
                 FileController.sendFilesList(ctx.channel(), STORAGE);
-                System.out.println("List send");
             }
             if(read == CommandType.DELETE.getCode()) {
                 FileController.deleteFromStorage(buf, STORAGE);
@@ -55,7 +56,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        System.out.println("client connected");
+        log.info("Client connected");
     }
 
     @Override
@@ -65,7 +66,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Client disconnected");
+    public void channelInactive(ChannelHandlerContext ctx) {
+        log.info("connection close");
     }
 }
