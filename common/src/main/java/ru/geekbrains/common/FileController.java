@@ -3,7 +3,6 @@ package ru.geekbrains.common;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
-import io.netty.channel.socket.SocketChannel;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -18,30 +17,26 @@ import java.util.stream.Collectors;
 public class FileController {
 
     private static final Logger log = Logger.getLogger(FileController.class);
+    private static ByteBuf buf;
 
     public synchronized static void sendFile(Path path, Channel channel) throws IOException {
 
-        ByteBuf buf = null;
-        buf = ByteBufAllocator.DEFAULT.directBuffer(1);
-        buf.writeByte(CommandType.SEND_FILE.getCode());
+        FileRegion region = new DefaultFileRegion(new FileInputStream(path.toFile()).getChannel(), 0, Files.size(path));
+
+        sendByte(channel, CommandType.SEND_FILE.getCode());
         log.info("Send command for file send");
-        channel.writeAndFlush(buf);
 
-        buf = ByteBufAllocator.DEFAULT.directBuffer(4);
-        buf.writeInt(path.getFileName().toString().length());
+        sendInt(channel, path.getFileName().toString().length());
         log.info("Send Filename length");
-        channel.writeAndFlush(buf);
 
-        byte[] filenameBytes = path.getFileName().toString().getBytes(StandardCharsets.UTF_8);
-        buf = ByteBufAllocator.DEFAULT.directBuffer(filenameBytes.length);
-        buf.writeBytes(filenameBytes);
+        sendString(channel, path.getFileName().toString());
         log.info("Send filename");
-        channel.writeAndFlush(buf);
 
-        buf = ByteBufAllocator.DEFAULT.directBuffer(8);
-        buf.writeLong(Files.size(path));
+        sendLong(channel, Files.size(path));
         log.info("Send file size");
-        channel.writeAndFlush(buf);
+
+        log.info("Sending file...");
+        channel.writeAndFlush(region);
 
     }
 
@@ -58,8 +53,10 @@ public class FileController {
             log.info("STATE: Filename received - " + new String(fileName, "UTF-8"));
             String filenameString = new String(fileName, "UTF-8");
             File file = new File(url + "/" + filenameString);
-            if (!file.exists()) {
-                out = new BufferedOutputStream(new FileOutputStream(url + "/" + new String(filenameString)));
+            if (file.exists()) {
+                out = new BufferedOutputStream(new FileOutputStream(url + "/" + new String(fileName) + "(1)"));
+            } else {
+                out = new BufferedOutputStream(new FileOutputStream(url + "/" + new String(fileName)));
             }
         }
         long receivedFileLength = 0;
@@ -69,15 +66,11 @@ public class FileController {
             log.info("STATE: File length received - " + fileLength);
         }
         while (buf.readableBytes() > 0) {
-            if (out != null) {
-                out.write(buf.readByte());
-            }
+            out.write(buf.readByte());
             receivedFileLength++;
             if (fileLength == receivedFileLength) {
                 log.info("File received");
-                if (out != null) {
                     out.close();
-                }
                 break;
             }
         }
@@ -101,23 +94,15 @@ public class FileController {
     }
 
     public synchronized static void sendDelete(Channel channel, String fileName) {
-        ByteBuf buf = null;
 
         log.info("Sending delete command for " + fileName);
-        buf = ByteBufAllocator.DEFAULT.directBuffer(1);
-        buf.writeByte(CommandType.DELETE.getCode());
-        channel.writeAndFlush(buf);
+        sendByte(channel, CommandType.DELETE.getCode());
 
         log.info("Sending file name length to delete");
-        buf = ByteBufAllocator.DEFAULT.directBuffer(4);
-        buf.writeInt(fileName.length());
-        channel.writeAndFlush(buf);
+        sendInt(channel, fileName.length());
 
         log.info("Sending filename to delete...");
-        byte[] filenameBytes = fileName.getBytes(StandardCharsets.UTF_8);
-        buf = ByteBufAllocator.DEFAULT.directBuffer(filenameBytes.length);
-        buf.writeBytes(filenameBytes);
-        channel.writeAndFlush(buf);
+        sendString(channel, fileName);
 
     }
 
@@ -126,6 +111,7 @@ public class FileController {
         if (buf.readableBytes() >= 4) {
             log.info("STATE: Get filename to delete length");
             nextLength = buf.readInt();
+            log.info(nextLength);
         }
         if (buf.readableBytes() >= nextLength) {
             log.info("STATE: receiving file name to delete");
@@ -140,9 +126,7 @@ public class FileController {
     public synchronized static void sendFilesList(Channel channel, String url) throws IOException {
         ByteBuf buf;
         ArrayList<FileMessage> fl = new ArrayList<>();
-        buf = ByteBufAllocator.DEFAULT.directBuffer(1);
-        buf.writeByte(CommandType.SEND_FILE_LIST.getCode());
-        channel.writeAndFlush(buf);
+        sendByte(channel, CommandType.SEND_FILE_LIST.getCode());
         log.info("Send refresh command");
 
         Path path = Paths.get(url);
@@ -152,9 +136,7 @@ public class FileController {
         byte[] bytes = filesToBytes(fileList);
         log.info("Got serialized list");
 
-        buf = ByteBufAllocator.DEFAULT.directBuffer(4);
-        buf.writeInt(bytes.length);
-        channel.writeAndFlush(buf);
+        sendInt(channel, bytes.length);
         log.info("Send list length");
 
         buf = ByteBufAllocator.DEFAULT.directBuffer(bytes.length);
@@ -166,11 +148,11 @@ public class FileController {
 
     public synchronized static FileList receiveFileList(ByteBuf buf, ByteBuf accum) throws InterruptedException {
         FileList fileList = new FileList();
-
         int nextLength = 0;
-        if (buf.readableBytes() > 4) {
+
+        if (buf.readableBytes() >= 4) {
             nextLength = buf.readInt();
-            log.info("Got file list length");
+            log.warn("Got file list length");
         }
         accum.writeBytes(buf);
 
@@ -178,20 +160,15 @@ public class FileController {
             byte[] fileBytes = new byte[nextLength];
             accum.readBytes(fileBytes);
             log.info("Got file list");
-            fileList = FileController.filesFromBytes(fileBytes);
+            fileList = filesFromBytes(fileBytes);
             accum.clear();
         }
         return fileList;
     }
 
     public synchronized static void sendRefresh(Channel channel) {
-        ByteBuf buf = null;
-
         log.info("Sending refresh command");
-        buf = ByteBufAllocator.DEFAULT.directBuffer(1);
-        buf.writeByte(CommandType.SEND_FILE_LIST.getCode());
-        channel.writeAndFlush(buf);
-
+        sendByte(channel, CommandType.SEND_FILE_LIST.getCode());
     }
 
     public synchronized static byte[] filesToBytes(FileList list) {
@@ -211,6 +188,7 @@ public class FileController {
             e.printStackTrace();
         }
         return bytes;
+
     }
 
     public synchronized static FileList filesFromBytes(byte[] bytes) {
@@ -235,23 +213,44 @@ public class FileController {
         return files;
     }
 
-    public synchronized static void downloadFile(SocketChannel channel, String fileName) {
-        ByteBuf buf = null;
+    public synchronized static void downloadFile(Channel channel, String fileName) {
 
         log.info("Sending download command for " + fileName);
-        buf = ByteBufAllocator.DEFAULT.directBuffer(1);
-        buf.writeByte(CommandType.RECEIVE_FILE.getCode());
-        channel.writeAndFlush(buf);
+        sendByte(channel, CommandType.RECEIVE_FILE.getCode());
 
         log.info("Sending file name length to download");
-        buf = ByteBufAllocator.DEFAULT.directBuffer(4);
-        buf.writeInt(fileName.length());
-        channel.writeAndFlush(buf);
+        sendInt(channel, fileName.length());
 
         log.info("Sending filename to download...");
-        byte[] filenameBytes = fileName.getBytes(StandardCharsets.UTF_8);
-        buf = ByteBufAllocator.DEFAULT.directBuffer(filenameBytes.length);
-        buf.writeBytes(filenameBytes);
+        sendString(channel, fileName);
+    }
+
+    private static void sendByte(Channel channel, int value) {
+        if (buf != null) buf = null;
+        buf = ByteBufAllocator.DEFAULT.directBuffer(1);
+        buf.writeByte((byte) value);
+        channel.writeAndFlush(buf);
+    }
+
+    private static void sendInt(Channel channel, int value){
+        if (buf != null) buf = null;
+        buf = ByteBufAllocator.DEFAULT.directBuffer(4);
+        buf.writeInt(value);
+        channel.writeAndFlush(buf);
+    }
+
+    private static void sendString(Channel channel, String string) {
+        if (buf != null) buf = null;
+        byte[] stringBytes = string.getBytes(StandardCharsets.UTF_8);
+        buf = ByteBufAllocator.DEFAULT.directBuffer(stringBytes.length);
+        buf.writeBytes(stringBytes);
+        channel.writeAndFlush(buf);
+    }
+
+    private static void sendLong(Channel channel, long value) {
+        if (buf != null) buf = null;
+        buf = ByteBufAllocator.DEFAULT.directBuffer(8);
+        buf.writeLong(value);
         channel.writeAndFlush(buf);
     }
 }

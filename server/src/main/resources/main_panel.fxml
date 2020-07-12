@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-<HBox alignment="center" spacing="30.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.server.ServerController">
-    <Button prefHeight="80.0" prefWidth="150.0" text="Start" onAction="#start" />
-    <Button prefHeight="80.0" prefWidth="150.0" text="Stop" onAction="#stop"/>
-</HBox>

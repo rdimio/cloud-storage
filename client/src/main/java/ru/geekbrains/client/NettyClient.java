@@ -1,6 +1,7 @@
 package ru.geekbrains.client;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
@@ -11,32 +12,32 @@ import org.apache.log4j.Logger;
 import ru.geekbrains.server.NettyServer;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CountDownLatch;
 
 public class NettyClient extends Thread {
 
-    private final int port;
-    private final String host;
-    private SocketChannel channel;
+    private static NettyClient instance = new NettyClient();
+    public static NettyClient getInstance() {
+        return instance;
+    }
+    private Channel channel;
     private static final Logger log = Logger.getLogger(NettyServer.class);
     EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-    public NettyClient(int port, String host) {
-        this.port = port;
-        this.host = host;
-    }
+    private NettyClient() {}
 
-    public SocketChannel getChannel() {
+    public Channel getChannel() {
         return channel;
     }
 
-    public void connect() {
+    public void connect(CountDownLatch countDownLatch, String host, int port) {
         Thread t = new Thread(() -> {
 
             try {
                 Bootstrap b = new Bootstrap();
                 b.group(workerGroup)
                         .channel(NioSocketChannel.class)
-                        .remoteAddress(new InetSocketAddress(host,port))
+                        .remoteAddress(new InetSocketAddress(host, port))
                         .handler(new ChannelInitializer<SocketChannel>() {
 
                             @Override
@@ -48,11 +49,17 @@ public class NettyClient extends Thread {
                         });
                 log.info("Client started");
                 ChannelFuture future = b.connect().sync();
-
+                countDownLatch.countDown();
                 future.channel().closeFuture().sync();
             } catch (Exception e) {
                 log.error(e.getStackTrace());
                 e.printStackTrace();
+            } finally {
+                try {
+                    workerGroup.shutdownGracefully().sync();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -61,7 +68,6 @@ public class NettyClient extends Thread {
     }
 
     public void disconnect() {
-        workerGroup.shutdownGracefully();
         channel.close();
         log.info("Shutdown client");
     }

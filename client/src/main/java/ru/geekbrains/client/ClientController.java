@@ -7,9 +7,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import org.apache.log4j.Logger;
+import ru.geekbrains.common.FileController;
 import ru.geekbrains.common.FileList;
 import ru.geekbrains.common.FileMessage;
-import ru.geekbrains.common.State;
 
 import java.io.IOException;
 import java.net.URL;
@@ -35,7 +36,9 @@ public class ClientController implements Initializable{
     private NettyClientHandler nettyClientHandler;
     private static final String url = "./client/src/main/resources/data";
     private boolean requestSend;
-//    private boolean isAlive;
+    private boolean isAlive;
+    private static final Logger log = Logger.getLogger(NettyClientHandler.class);
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -50,26 +53,26 @@ public class ClientController implements Initializable{
         Platform.exit();
     }
 
-    public void connect(ActionEvent actionEvent) {
-//        if (!isAlive) {
+    public void connect(ActionEvent actionEvent) throws InterruptedException {
+        if (!isAlive) {
             nettyClientHandler.connectServer();
-/*            isAlive = true;
+            isAlive = true;
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR, "client is already connected", ButtonType.OK);
             alert.showAndWait();
-        }*/
+        }
     }
 
 
     public void disconnect(ActionEvent actionEvent) {
-/*        if(isAlive) {
-            isAlive = false;*/
+        if(isAlive) {
+            isAlive = false;
             nettyClientHandler.disconnectServer();
             serverFilesTable.getItems().clear();
-/*        } else  {
+        } else  {
             Alert alert = new Alert(Alert.AlertType.ERROR, "client is already disconnected", ButtonType.OK);
             alert.showAndWait();
-        }*/
+        }
 
     }
 
@@ -161,11 +164,9 @@ public class ClientController implements Initializable{
         btnPathUpAction(serverPathField, serverFilesTable);
     }
 
-    public void sendToCloudBtnAction(ActionEvent actionEvent) throws IOException {
+    public void sendToCloudBtnAction(ActionEvent actionEvent) throws IOException, InterruptedException {
         Path path = Paths.get(getCurrentPath(clientPathField), getSelectedFilename(clientFilesTable));
-        nettyClientHandler.setCurrentState(State.SEND_FILE);
-        nettyClientHandler.connectServer();
-        nettyClientHandler.sendToCloud(path);
+        FileController.sendFile(path, nettyClientHandler.getNettyClient().getChannel());
         requestSend = false;
     }
 
@@ -178,23 +179,20 @@ public class ClientController implements Initializable{
 
     public void downloadBtnAction(ActionEvent actionEvent) {
         String fn = serverFilesTable.getSelectionModel().getSelectedItem().getFilename();
-        nettyClientHandler.setCurrentState(State.DOWNLOAD_FILE);
-        nettyClientHandler.setUrl(fn);
-        nettyClientHandler.downloadFile(fn);
+        nettyClientHandler.setUrl(getCurrentPath(clientPathField));
+        FileController.downloadFile(nettyClientHandler.getNettyClient().getChannel(), fn);
         requestSend = false;
     }
 
     public void deleteFromCloudBtnAction(ActionEvent actionEvent) {
         String fn = serverFilesTable.getSelectionModel().getSelectedItem().getFilename();
-        nettyClientHandler.setCurrentState(State.DELETE_FILE);
-        nettyClientHandler.deleteFromCloud(fn);
+        FileController.sendDelete(nettyClientHandler.getNettyClient().getChannel(),fn);
         requestSend = false;
     }
 
     public void updateServerTable(ActionEvent actionEvent) {
         if (!requestSend) {
-            nettyClientHandler.setCurrentState(State.GET_LIST);
-            nettyClientHandler.getFileList();
+            FileController.sendRefresh(nettyClientHandler.getNettyClient().getChannel());
             requestSend = true;
         }
 

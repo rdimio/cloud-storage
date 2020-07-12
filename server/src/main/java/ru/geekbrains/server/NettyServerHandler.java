@@ -22,41 +22,32 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         server = new NettyServer();
     }
 
-    public void serverStart() {
-        new Thread(server).start();
-    }
-
-    public void serverStop() {
-        server.disconnect();
-    }
-
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws IOException {
         if (msg == null) return;
         ByteBuf buf = ((ByteBuf) msg);
-        while (buf.readableBytes() > 0) {
+        while(buf.readableBytes() > 0) {
+
             byte read = buf.readByte();
-            if(read == CommandType.SEND_FILE.getCode()) {
+//            System.out.println(buf.readableBytes());
+            if (read == CommandType.SEND_FILE.getCode()) {
+//                System.out.println(buf.readableBytes());
                 FileController.receiveFile(buf, STORAGE);
             }
-            if(read == CommandType.RECEIVE_FILE.getCode()) {
+            if (read == CommandType.RECEIVE_FILE.getCode()) {
                 Path path = FileController.getFileByFileName(buf, STORAGE);
                 FileController.sendFile(path, ctx.channel());
             }
-            if(read == CommandType.SEND_FILE_LIST.getCode()) {
+            if (read == CommandType.SEND_FILE_LIST.getCode()) {
                 FileController.sendFilesList(ctx.channel(), STORAGE);
             }
-            if(read == CommandType.DELETE.getCode()) {
+            if (read == CommandType.DELETE.getCode()) {
                 FileController.deleteFromStorage(buf, STORAGE);
             }
         }
-        buf.release();
-        ctx.close();
-    }
-
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) {
-        log.info("Client connected");
+        if (buf.readableBytes() == 0) {
+            buf.release();
+        }
     }
 
     @Override
@@ -65,8 +56,4 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
-        log.info("connection close");
-    }
 }

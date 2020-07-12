@@ -9,14 +9,13 @@ import org.apache.log4j.Logger;
 
 public class NettyServer extends Thread{
 
-    private static final int PORT = 8190;
+    private static final int PORT = 8090;
     private static final Logger log = Logger.getLogger(NettyServer.class);
-    EventLoopGroup bossGroup = new NioEventLoopGroup();
-    EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     @Override
     public void run() {
-
+        EventLoopGroup bossGroup = new NioEventLoopGroup();
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
@@ -26,8 +25,7 @@ public class NettyServer extends Thread{
                         public void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().addLast(new NettyServerHandler());
                         }
-                    })
-                    .childOption(ChannelOption.SO_KEEPALIVE, true);
+                    });
             log.info("Starting server");
             ChannelFuture f = null;
             try {
@@ -39,14 +37,14 @@ public class NettyServer extends Thread{
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } finally {
+            workerGroup.shutdownGracefully();
+            bossGroup.shutdownGracefully();
         }
 
     }
 
-    public void disconnect(){
-        workerGroup.shutdownGracefully();
-        bossGroup.shutdownGracefully();
-        log.info("Shutdown server");
-        interrupt();
+    public static void main(String[] args) throws Exception {
+        new NettyServer().start();
     }
 }
