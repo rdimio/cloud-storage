@@ -11,10 +11,10 @@ import org.apache.log4j.Logger;
 import ru.geekbrains.common.FileList;
 import ru.geekbrains.common.FileMessage;
 import ru.geekbrains.common.State;
+import ru.geekbrains.common.User;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,8 +35,14 @@ public class ClientController implements Initializable{
     @FXML
     TextField clientPathField, serverPathField;
 
+    @FXML
+    TextField login;
+
+    @FXML
+    PasswordField password;
+
     private NettyClientHandler nettyClientHandler;
-    private static final String url = "./client/src/main/resources/data";
+    private static final String url = "./client/data";
     private boolean isAlive;
     private static final Logger log = Logger.getLogger(NettyClientHandler.class);
 
@@ -57,7 +63,9 @@ public class ClientController implements Initializable{
     public void connect(ActionEvent actionEvent) throws InterruptedException {
         if (!isAlive) {
             nettyClientHandler.connectServer();
-            nettyClientHandler.getNettyClient().getChannel().writeAndFlush(State.LIST_REQUEST);
+            User user = new User(login.getText(), password.getText());
+            nettyClientHandler.getNettyClient().getChannel().writeAndFlush(user);
+            nettyClientHandler.getNettyClient().getChannel().writeAndFlush(State.AUTH);
             isAlive = true;
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR, "client is already connected", ButtonType.OK);

@@ -18,7 +18,7 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
     private final CountDownLatch clientStarter;
     private final String host;
     private final int port;
-    private static final String url = "./client/src/main/resources/data";
+    private static final String url = "./client/data";
 
     public NettyClientHandler(int port, String host) {
         this.host = host;

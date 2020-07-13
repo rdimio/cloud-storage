@@ -35,11 +35,14 @@ public class NettyServer extends Thread{
             ChannelFuture f = null;
             try {
                 f = b.bind(PORT).sync();
+                SqlClient.connect();
+                log.info("connected to DB");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
             f.channel().closeFuture().sync();
+            SqlClient.disconnect();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {

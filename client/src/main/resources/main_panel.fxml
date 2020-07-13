@@ -40,6 +40,8 @@
         <padding>
             <Insets top="10" bottom="10" left="10" right="10"/>
         </padding>
+        <TextField text="vad" fx:id="login"/>
+        <PasswordField text="123456" fx:id="password"/>
         <TextField text="localhost" fx:id="ipAddress"/>
         <TextField text="8190" fx:id="port"/>
         <Button maxWidth="Infinity" focusTraversable="false" text="connect" HBox.hgrow="ALWAYS" onAction="#connect"/>

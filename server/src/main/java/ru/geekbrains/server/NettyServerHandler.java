@@ -18,18 +18,28 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     private NettyServer server;
     static ConcurrentLinkedDeque<ChannelHandlerContext> clients = new ConcurrentLinkedDeque<>();
-    private static final String STORAGE = "./server/src/main/resources/data";
+    private static final String STORAGE = "./server/data";
     private static final Logger log = Logger.getLogger(NettyServerHandler.class);
     private String fileName;
     private File file;
+    private String login;
+    private String password;
 
     public NettyServerHandler() {
         server = new NettyServer();
     }
 
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws IOException {
         if (msg == null) return;
+        if (msg instanceof User) {
+            User user = (User) msg;
+            login = user.getLogin();
+            password = user.getPassword();
+            clients.add(ctx);
+            log.info("new client connected " + login);
+        }
         if(msg instanceof String)
             fileName = (String) msg;
         if(msg instanceof File) {
@@ -39,6 +49,15 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         if(msg instanceof State) {
             State state = (State) msg;
 
+            if (state == State.AUTH) {
+                if(SqlClient.getId(login, password) != 0)
+                    state = State.LIST_REQUEST;
+                else {
+                    clients.remove(ctx);
+                    log.info("login or password is incorrect");
+                    ctx.close();
+                }
+            }
             if (state == State.LIST_REQUEST) {
                 log.info("server sends FileList");
                 Path path = Paths.get(STORAGE);
