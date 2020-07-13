@@ -8,8 +8,6 @@ public class FileList implements Serializable {
     private List<FileMessage> list;
     private String url;
 
-    public FileList() { }
-
     public FileList(List<FileMessage> list, String url) {
         this.list = list;
         this.url =  url;

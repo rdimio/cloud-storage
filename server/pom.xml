@@ -19,7 +19,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ServerMain</mainClass>
+                            <mainClass>ru.geekbrains.server.NettyServer</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

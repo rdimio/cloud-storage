@@ -19,7 +19,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ClientMain</mainClass>
+                            <mainClass>ru.geekbrains.client.ClientMain</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

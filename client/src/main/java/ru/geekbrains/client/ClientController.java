@@ -8,11 +8,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import org.apache.log4j.Logger;
-import ru.geekbrains.common.FileController;
 import ru.geekbrains.common.FileList;
 import ru.geekbrains.common.FileMessage;
+import ru.geekbrains.common.State;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,7 +37,6 @@ public class ClientController implements Initializable{
 
     private NettyClientHandler nettyClientHandler;
     private static final String url = "./client/src/main/resources/data";
-    private boolean requestSend;
     private boolean isAlive;
     private static final Logger log = Logger.getLogger(NettyClientHandler.class);
 
@@ -56,6 +57,7 @@ public class ClientController implements Initializable{
     public void connect(ActionEvent actionEvent) throws InterruptedException {
         if (!isAlive) {
             nettyClientHandler.connectServer();
+            nettyClientHandler.getNettyClient().getChannel().writeAndFlush(State.LIST_REQUEST);
             isAlive = true;
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR, "client is already connected", ButtonType.OK);
@@ -165,43 +167,36 @@ public class ClientController implements Initializable{
     }
 
     public void sendToCloudBtnAction(ActionEvent actionEvent) throws IOException, InterruptedException {
-        Path path = Paths.get(getCurrentPath(clientPathField), getSelectedFilename(clientFilesTable));
-        FileController.sendFile(path, nettyClientHandler.getNettyClient().getChannel());
-        requestSend = false;
+        File file = new File(getCurrentPath(clientPathField), getSelectedFilename(clientFilesTable));
+        nettyClientHandler.getNettyClient().getChannel().writeAndFlush(file);
+        nettyClientHandler.getNettyClient().getChannel().writeAndFlush(State.FILE_RECEIVE);
+        nettyClientHandler.getNettyClient().getChannel().writeAndFlush(State.LIST_REQUEST);
     }
 
     public void deleteFromClientBtnAction(ActionEvent actionEvent) throws IOException {
         Path path = Paths.get(getCurrentPath(clientPathField), getSelectedFilename(clientFilesTable));
         Files.delete(path);
         updateList(clientFilesTable, path.getParent(), clientPathField);
-        requestSend = false;
     }
 
-    public void downloadBtnAction(ActionEvent actionEvent) {
-        String fn = serverFilesTable.getSelectionModel().getSelectedItem().getFilename();
-        nettyClientHandler.setUrl(getCurrentPath(clientPathField));
-        FileController.downloadFile(nettyClientHandler.getNettyClient().getChannel(), fn);
-        requestSend = false;
+    public void downloadBtnAction(ActionEvent actionEvent) throws IOException {
+        String fileName = serverFilesTable.getSelectionModel().getSelectedItem().getFilename();
+        nettyClientHandler.getNettyClient().getChannel().writeAndFlush(fileName);
+        nettyClientHandler.getNettyClient().getChannel().writeAndFlush(State.FILE_DOWNLOAD);
     }
 
     public void deleteFromCloudBtnAction(ActionEvent actionEvent) {
         String fn = serverFilesTable.getSelectionModel().getSelectedItem().getFilename();
-        FileController.sendDelete(nettyClientHandler.getNettyClient().getChannel(),fn);
-        requestSend = false;
+        String fileName = serverFilesTable.getSelectionModel().getSelectedItem().getFilename();
+        nettyClientHandler.getNettyClient().getChannel().writeAndFlush(fileName);
+        nettyClientHandler.getNettyClient().getChannel().writeAndFlush(State.FILE_DELETE);
+        nettyClientHandler.getNettyClient().getChannel().writeAndFlush(State.LIST_REQUEST);
     }
 
     public void updateServerTable(ActionEvent actionEvent) {
-        if (!requestSend) {
-            FileController.sendRefresh(nettyClientHandler.getNettyClient().getChannel());
-            requestSend = true;
-        }
-
         FileList fl = NettyClientHandler.getList();
-        if(NettyClientHandler.isListRefreshed()) {
-            updateList(serverFilesTable, Paths.get(fl.getUrl()), serverPathField);
-            updateList(clientFilesTable, Paths.get(url), clientPathField);
-            requestSend = false;
-        }
+        updateList(serverFilesTable, Paths.get(fl.getUrl()), serverPathField);
+        updateList(clientFilesTable, Paths.get(url), clientPathField);
     }
 
 }

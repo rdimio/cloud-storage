@@ -41,7 +41,7 @@
             <Insets top="10" bottom="10" left="10" right="10"/>
         </padding>
         <TextField text="localhost" fx:id="ipAddress"/>
-        <TextField text="8090" fx:id="port"/>
+        <TextField text="8190" fx:id="port"/>
         <Button maxWidth="Infinity" focusTraversable="false" text="connect" HBox.hgrow="ALWAYS" onAction="#connect"/>
         <Button maxWidth="Infinity" focusTraversable="false" text="disconnect" HBox.hgrow="ALWAYS" onAction="#disconnect"/>
         <Button maxWidth="Infinity" focusTraversable="false" text="updateServerTable" HBox.hgrow="ALWAYS" onAction="#updateServerTable"/>

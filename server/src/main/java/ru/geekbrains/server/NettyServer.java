@@ -5,11 +5,14 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import org.apache.log4j.Logger;
 
 public class NettyServer extends Thread{
 
-    private static final int PORT = 8090;
+    private static final int PORT = 8190;
     private static final Logger log = Logger.getLogger(NettyServer.class);
 
     @Override
@@ -23,7 +26,9 @@ public class NettyServer extends Thread{
                     .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new NettyServerHandler());
+                            ch.pipeline().addLast(new ObjectEncoder(),
+                                    new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                                    new NettyServerHandler());
                         }
                     });
             log.info("Starting server");

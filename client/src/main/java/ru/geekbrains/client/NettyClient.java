@@ -8,6 +8,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import org.apache.log4j.Logger;
 import ru.geekbrains.server.NettyServer;
 
@@ -42,7 +45,9 @@ public class NettyClient extends Thread {
 
                             @Override
                             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                                socketChannel.pipeline().addLast(new NettyClientHandler(port, host));
+                                socketChannel.pipeline().addLast(new ObjectEncoder(),
+                                        new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                                        new NettyClientHandler(port, host));
                                 channel = socketChannel;
                             }
 
