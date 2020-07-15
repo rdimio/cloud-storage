@@ -7,7 +7,11 @@ import ru.geekbrains.common.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
+
+import static java.nio.file.StandardOpenOption.*;
 
 public class NettyClientHandler extends ChannelInboundHandlerAdapter {
 
@@ -44,10 +48,10 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
             list = (FileList) msg;
             log.info("FileList is received " + list);
         }
-        if(msg instanceof File) {
-            File file = (File) msg;
+        if(msg instanceof FileMessage) {
+            FileMessage file = (FileMessage) msg;
+            Files.write(Paths.get(url + "/" + file.getFilename()), file.getFileByteArray(), CREATE, WRITE, APPEND);
             log.info(file + " is received");
-            FileController.copyFileUsingStream(file, new File(url + "/" + file.getName()));
         }
     }
 

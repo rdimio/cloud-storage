@@ -34,11 +34,13 @@ public class FileMessage implements Serializable {
     public LocalDateTime getLastModified() {
         return lastModified;
     }
+    public byte[] getFileByteArray() { return fileByteArray; }
 
     private String filename;
     private FileType type;
     private long size;
     private LocalDateTime lastModified;
+    private byte[] fileByteArray;
 
     public FileMessage(Path path) {
         try {
@@ -49,6 +51,7 @@ public class FileMessage implements Serializable {
                 this.size = -1L;
             }
             this.lastModified = LocalDateTime.ofInstant(Files.getLastModifiedTime(path).toInstant(), ZoneOffset.ofHours(3));
+            fileByteArray = Files.readAllBytes(path);
         } catch (IOException e) {
             throw new RuntimeException("Unable to create file info from path");
         }

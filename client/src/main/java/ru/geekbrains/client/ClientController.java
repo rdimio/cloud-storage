@@ -175,7 +175,7 @@ public class ClientController implements Initializable{
     }
 
     public void sendToCloudBtnAction(ActionEvent actionEvent) throws IOException, InterruptedException {
-        File file = new File(getCurrentPath(clientPathField), getSelectedFilename(clientFilesTable));
+        FileMessage file = new FileMessage(Paths.get(url + "/" + clientFilesTable.getSelectionModel().getSelectedItem().getFilename()));
         nettyClientHandler.getNettyClient().getChannel().writeAndFlush(file);
         nettyClientHandler.getNettyClient().getChannel().writeAndFlush(State.FILE_RECEIVE);
         nettyClientHandler.getNettyClient().getChannel().writeAndFlush(State.LIST_REQUEST);
@@ -194,7 +194,6 @@ public class ClientController implements Initializable{
     }
 
     public void deleteFromCloudBtnAction(ActionEvent actionEvent) {
-        String fn = serverFilesTable.getSelectionModel().getSelectedItem().getFilename();
         String fileName = serverFilesTable.getSelectionModel().getSelectedItem().getFilename();
         nettyClientHandler.getNettyClient().getChannel().writeAndFlush(fileName);
         nettyClientHandler.getNettyClient().getChannel().writeAndFlush(State.FILE_DELETE);

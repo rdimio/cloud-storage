@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
 
+import static java.nio.file.StandardOpenOption.*;
+
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     private NettyServer server;
@@ -21,7 +23,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     private static final String STORAGE = "./server/data";
     private static final Logger log = Logger.getLogger(NettyServerHandler.class);
     private String fileName;
-    private File file;
+    private FileMessage file;
     private String login;
     private String password;
 
@@ -42,8 +44,8 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         }
         if(msg instanceof String)
             fileName = (String) msg;
-        if(msg instanceof File) {
-            file = (File) msg;
+        if(msg instanceof FileMessage) {
+            file = (FileMessage) msg;
             log.info(file + " is received");
         }
         if(msg instanceof State) {
@@ -67,16 +69,16 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             }
             if (state == State.FILE_DOWNLOAD) {
                 log.info("server sends file " + fileName);
-                File file = new File(STORAGE + "/" + fileName);
-                ctx.writeAndFlush(file);
+                FileMessage fileMessage = new FileMessage(Paths.get(STORAGE + "/" + fileName));
+                ctx.writeAndFlush(fileMessage);
             }
             if(state == State.FILE_DELETE) {
                 log.info("delete file on server: " + fileName);
                 Files.delete(Paths.get(STORAGE + "/" + fileName));
             }
             if(state == State.FILE_RECEIVE) {
+                Files.write(Paths.get(STORAGE + "/" + file.getFilename()), file.getFileByteArray(), CREATE, WRITE, APPEND);
                 log.info("received file on server " + fileName);
-                FileController.copyFileUsingStream(file, new File(STORAGE + "/" + file.getName()));
             }
         }
 
